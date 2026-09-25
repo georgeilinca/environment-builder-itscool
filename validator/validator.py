@@ -88,7 +88,7 @@ def validate_configuration(config, supported):
 
 
 def generate_variables(config, supported, output_file):
-    """Genereaza variablie folosite ulterior de Ansible."""
+    """Genereaza variabilele folosite ulterior ca input in Ansible."""
     requested = {
         technology["name"]: technology["version"]
         for technology in config["technologies"]
@@ -98,16 +98,17 @@ def generate_variables(config, supported, output_file):
         "technologies": {}
     }
 
-    for name in supported["technologies"]:
+    for name, details in supported["technologies"].items():
+        technology_data = {
+            "enabled": name in requested
+        }
+
         if name in requested:
-            generated["technologies"][name] = {
-                "enabled": True,
-                "version": requested[name]
-            }
-        else:
-            generated["technologies"][name] = {
-                "enabled": False
-            }
+            technology_data["version"] = requested[name]
+
+        technology_data["command"] = details["command"]
+
+        generated["technologies"][name] = technology_data
 
     with open(output_file, "w", encoding="utf-8") as file:
         yaml.safe_dump(

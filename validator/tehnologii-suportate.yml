@@ -2,31 +2,39 @@ technologies:
   docker:
     versions:
       - "27"
+    command: "docker"
 
   python:
     versions:
       - "3.12"
+    command: "python3"
 
   java:
     versions:
       - "17"
+    command: "java"
 
   nodejs:
     versions:
       - "22"
+    command: "node"
 
   mysql:
     versions:
       - "8.0"
+    command: "mysql"
 
   nginx:
     versions:
       - "1.24"
+    command: "nginx"
 
   git:
     versions:
       - "2.43"
+    command: "git"
 
   redis:
     versions:
       - "7"
+    command: "redis-server"
