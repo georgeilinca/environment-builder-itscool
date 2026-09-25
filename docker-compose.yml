@@ -1,0 +1,15 @@
+services:
+  validator:
+    build:
+      context: ./validator
+    image: environment-builder-validator:1.0
+
+    volumes:
+      - ./config:/config:ro
+      - ./generated:/output
+
+    command:
+      - --config
+      - /config/config.yml
+      - --output
+      - /output/generated.yml

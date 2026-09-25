@@ -119,11 +119,31 @@ def generate_variables(config, supported, output_file):
 
 
 def main():
-    config_file = (
-        Path(sys.argv[1])
-        if len(sys.argv) > 1
-        else DEFAULT_CONFIG_FILE
-    )
+    config_file = DEFAULT_CONFIG_FILE
+    output_file = DEFAULT_OUTPUT_FILE
+
+    args = sys.argv[1:]
+
+    if "--config" in args:
+        config_index = args.index("--config")
+
+        if config_index + 1 >= len(args):
+            print("ERROR: Optiunea --config necesita o cale catre fisier.")
+            return 1
+
+        config_file = Path(args[config_index + 1])
+
+    elif args:
+        config_file = Path(args[0])
+
+    if "--output" in args:
+        output_index = args.index("--output")
+
+        if output_index + 1 >= len(args):
+            print("ERROR: Optiunea --output necesita o cale catre fisier.")
+            return 1
+
+        output_file = Path(args[output_index + 1])
 
     print("============================================")
     print(" Environment Builder - Validare configuratie")
@@ -134,23 +154,26 @@ def main():
     print()
 
     config = load_yaml(config_file)
+
     if config is None:
         return 1
 
     supported = load_yaml(SUPPORTED_FILE)
+
     if supported is None:
         return 1
 
     errors = validate_configuration(config, supported)
 
     if errors:
-        print("Validarea configurarii nu a reusit - FAILED.")
+        print("Validarea configurarii a esuat - FAILED.")
         print()
+
         for error in errors:
             print(f"ERROR: {error}")
 
         print()
-        print("Instalarea nu va incepe.")
+        print("Instalarea nu va porni.")
         return 1
 
     print("Validarea configurarii a reusit - PASSED.")
@@ -159,10 +182,10 @@ def main():
     generate_variables(
         config,
         supported,
-        DEFAULT_OUTPUT_FILE
+        output_file
     )
 
-    print(f"Variabile generate in fisierul: {DEFAULT_OUTPUT_FILE}")
+    print(f"Variabile generate in fisierul: {output_file}")
     print()
     print("Validarea s-a finalizat cu SUCCES.")
 
