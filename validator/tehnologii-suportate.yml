@@ -1,0 +1,32 @@
+technologies:
+  docker:
+    versions:
+      - "27"
+
+  python:
+    versions:
+      - "3.12"
+
+  java:
+    versions:
+      - "17"
+
+  nodejs:
+    versions:
+      - "22"
+
+  mysql:
+    versions:
+      - "8.0"
+
+  nginx:
+    versions:
+      - "1.24"
+
+  git:
+    versions:
+      - "2.43"
+
+  redis:
+    versions:
+      - "7"

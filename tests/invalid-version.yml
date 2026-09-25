@@ -1,0 +1,9 @@
+technologies:
+  - name: docker
+    version: "27"
+
+  - name: python
+    version: "2.7"
+
+  - name: java
+    version: "17"
