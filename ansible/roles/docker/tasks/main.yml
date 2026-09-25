@@ -1,0 +1,24 @@
+---
+- name: Docker | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Docker. Versiunea necesara: {{ technologies.docker.version }}"
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Instaleaza Docker
+  ansible.builtin.apt:
+    name: docker-ce
+    state: present
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Se asigura ca Docker ruleaza
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+  when: technologies.docker.enabled | bool

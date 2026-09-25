@@ -1,0 +1,9 @@
+---
+- name: Instaleaza tehnologiile cerute
+  hosts: environment_servers
+
+  vars:
+    technologies: {}
+
+  roles:
+    - role: docker
