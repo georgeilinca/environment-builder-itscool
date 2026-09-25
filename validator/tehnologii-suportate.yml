@@ -2,6 +2,8 @@ technologies:
   docker:
     versions:
       - "27"
+      - "28"
+      - "29"
     command: "docker"
 
   python:

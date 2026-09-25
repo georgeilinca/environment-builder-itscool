@@ -6,8 +6,7 @@ import yaml
 
 SUPPORTED_FILE = Path(__file__).parent / "tehnologii-suportate.yml"
 DEFAULT_CONFIG_FILE = Path(__file__).parent.parent / "config" / "config.yml"
-DEFAULT_OUTPUT_FILE = Path(__file__).parent.parent / "generated.yml"
-
+DEFAULT_OUTPUT_FILE = Path(__file__).parent.parent / "generated" / "generated.yml"
 
 def load_yaml(file_path):
     """Incarca si returneaza YAML data dintr-un fisier."""
