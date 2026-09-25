@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Generated files
+generated.yml
+generated.yaml
+
+# Environment / secrets
+.env
+*.secret
+*.pem
+*.key
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Terraform sensitive files
+terraform.tfvars
+terraform.tfvars.json
+
+# SSH
+*.pem
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
