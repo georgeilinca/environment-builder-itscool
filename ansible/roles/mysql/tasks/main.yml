@@ -4,10 +4,14 @@
     msg: "Se cere instalarea MySQL. Versiunea necesara: {{ technologies.mysql.version }}"
   when: technologies.mysql.enabled | bool
 
-- name: MySQL | Update apt cache
+- name: MySQL | Instaleaza dependente pentru repository
   ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
     update_cache: true
-    cache_valid_time: 3600
   when: technologies.mysql.enabled | bool
 
 - name: MySQL | Verifica versiunea disponibila in APT
@@ -22,6 +26,39 @@
     msg: "{{ mysql_candidate.stdout }}"
   when: technologies.mysql.enabled | bool
 
+- name: MySQL | Configureaza repository-ul oficial pentru MySQL 8.4
+  ansible.builtin.deb822_repository:
+    name: mysql
+    types: deb
+    uris: https://repo.mysql.com/apt/ubuntu/
+    suites: "{{ ansible_distribution_release }}"
+    components:
+      - mysql-8.4-lts
+    signed_by: https://repo.mysql.com/RPM-GPG-KEY-mysql-2023
+    state: present
+  when:
+    - technologies.mysql.enabled | bool
+    - technologies.mysql.version == "8.4"
+
+- name: MySQL | Update apt cache dupa configurarea repository-ului
+  ansible.builtin.apt:
+    update_cache: true
+  when:
+    - technologies.mysql.enabled | bool
+    - technologies.mysql.version == "8.4"
+
+- name: MySQL | Verifica din nou versiunea disponibila
+  ansible.builtin.command:
+    cmd: apt-cache policy mysql-server
+  register: mysql_candidate
+  changed_when: false
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Afiseaza versiunea disponibila
+  ansible.builtin.debug:
+    msg: "{{ mysql_candidate.stdout }}"
+  when: technologies.mysql.enabled | bool
+
 - name: MySQL | Verifica daca versiunea ceruta este disponibila
   ansible.builtin.assert:
     that:
@@ -31,6 +68,8 @@
     fail_msg: >-
       Versiunea MySQL {{ technologies.mysql.version }} nu este disponibila
       in repository-urile APT configurate.
+    success_msg: >-
+      Versiunea MySQL {{ technologies.mysql.version }} este disponibila.
   when: technologies.mysql.enabled | bool
 
 - name: MySQL | Obtine versiunea completa candidata

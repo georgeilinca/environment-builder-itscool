@@ -3,22 +3,10 @@ technologies:
     version: "29"
 
   - name: python
-    version: "3.13"
+    version: "3.12"
 
   - name: java
     version: "17"
 
-  - name: nodejs
-    version: "22"
-
   - name: mysql
-    version: "8.4"
-
-  - name: nginx
-    version: "1.28"
-
-  - name: git
-    version: "2.51"
-
-  - name: redis
-    version: "8"
+    version: "8.0"

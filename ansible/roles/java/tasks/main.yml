@@ -38,7 +38,11 @@
 
 - name: Java | Configureaza Java ca versiune implicita
   ansible.builtin.command:
-    cmd: "update-alternatives --set java /usr/lib/jvm/java-{{ technologies.java.version }}-openjdk-arm64/bin/java"
+    cmd: >
+      update-alternatives --set java
+      /usr/lib/jvm/java-{{ technologies.java.version }}-openjdk-{{
+        'amd64' if ansible_architecture == 'x86_64' else 'arm64'
+      }}/bin/java
   when: technologies.java.enabled | bool
 
 - name: Java | Verifica versiunea instalata
