@@ -2,7 +2,8 @@
 
 set -u
 
-GENERATED_FILE="generated.yml"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GENERATED_FILE="$PROJECT_ROOT/generated/generated.yml"
 
 echo "=================================================================="
 echo " Environment Builder - Verificarea instalarii tehnologiilor cerute"
@@ -10,8 +11,10 @@ echo "=================================================================="
 echo
 
 if [ ! -f "$GENERATED_FILE" ]; then
-    echo "ERROR: Fisierul cu variabile generate nu a fost gasit: $GENERATED_FILE"
-    echo "Ruleaza validarea configurarii mai intai (scriptul Python)."
+    echo "ERROR: Fisierul cu variabile generate nu a fost gasit:"
+    echo "       $GENERATED_FILE"
+    echo
+    echo "Ruleaza validarea configurarii mai intai."
     exit 1
 fi
 
@@ -20,6 +23,10 @@ if ! command -v yq >/dev/null 2>&1; then
     echo "Instaleaza yq pentru a putea analiza fisierul YAML."
     exit 1
 fi
+
+echo "Fisier configuratie:"
+echo "  $GENERATED_FILE"
+echo
 
 echo "Citesc tehnologiile cerute..."
 echo
@@ -42,10 +49,14 @@ check_technology() {
 
     local installed_version
 
-    installed_version=$("$command" --version 2>&1 | head -n 1)
+    if [ "$technology" = "nginx" ]; then
+        installed_version=$("$command" -v 2>&1 | head -n 1)
+    else
+        installed_version=$("$command" --version 2>&1 | head -n 1)
+    fi
 
     echo "[INFO] $technology"
-    echo "       Versiune ceruta:   $version"
+    echo "       Versiune ceruta:    $version"
     echo "       Versiune instalata: $installed_version"
 
     if [[ "$installed_version" == *"$version"* ]]; then
