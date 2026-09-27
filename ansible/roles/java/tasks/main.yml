@@ -1,0 +1,54 @@
+---
+- name: Java | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Java. Versiunea necesara: {{ technologies.java.version }}"
+  when: technologies.java.enabled | bool
+
+- name: Java | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.java.enabled | bool
+
+- name: Java | Verifica versiunea ceruta in APT
+  ansible.builtin.command:
+    cmd: "apt-cache policy openjdk-{{ technologies.java.version }}-jdk"
+  register: java_candidate
+  changed_when: false
+  when: technologies.java.enabled | bool
+
+- name: Java | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ java_candidate.stdout }}"
+  when: technologies.java.enabled | bool
+
+- name: Java | Verifica daca versiunea este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in java_candidate.stdout"
+      - "(java_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+    fail_msg: "Versiunea Java {{ technologies.java.version }} nu este disponibila in repository-urile APT configurate."
+  when: technologies.java.enabled | bool
+
+- name: Java | Instaleaza JDK
+  ansible.builtin.apt:
+    name: "openjdk-{{ technologies.java.version }}-jdk"
+    state: present
+  when: technologies.java.enabled | bool
+
+- name: Java | Configureaza Java ca versiune implicita
+  ansible.builtin.command:
+    cmd: "update-alternatives --set java /usr/lib/jvm/java-{{ technologies.java.version }}-openjdk-arm64/bin/java"
+  when: technologies.java.enabled | bool
+
+- name: Java | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: java -version
+  register: java_installed
+  changed_when: false
+  when: technologies.java.enabled | bool
+
+- name: Java | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ java_installed.stderr }}"
+  when: technologies.java.enabled | bool

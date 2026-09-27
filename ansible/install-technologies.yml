@@ -7,3 +7,6 @@
 
   roles:
     - role: docker
+    - role: python
+    - role: java
+    - role: node

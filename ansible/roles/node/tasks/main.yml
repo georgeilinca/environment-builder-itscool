@@ -1,0 +1,72 @@
+---
+- name: Node.js | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Node.js. Versiunea necesara: {{ technologies.nodejs.version }}"
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Verifica versiunea Node.js instalata
+  ansible.builtin.command:
+    cmd: node --version
+  register: node_installed
+  changed_when: false
+  failed_when: false
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: >-
+      Node.js instalat:
+      {{ node_installed.stdout if node_installed.rc == 0 else 'nu este instalat' }}
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Configureaza repository-ul NodeSource
+  ansible.builtin.shell:
+    cmd: |
+      curl -fsSL https://deb.nodesource.com/setup_{{ technologies.nodejs.version }}.x | bash -
+    executable: /bin/bash
+  when:
+    - technologies.nodejs.enabled | bool
+    - node_installed.rc != 0 or
+      not (node_installed.stdout | regex_search('^v' ~ technologies.nodejs.version ~ '\\.'))
+
+- name: Node.js | Update apt cache dupa configurarea NodeSource
+  ansible.builtin.apt:
+    update_cache: true
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Instaleaza Node.js
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: node --version
+  register: node_installed_final
+  changed_when: false
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Verifica major version
+  ansible.builtin.assert:
+    that:
+      - node_installed_final.rc == 0
+      - "(node_installed_final.stdout | regex_search('^v' ~ technologies.nodejs.version ~ '\\.')) is not none"
+    fail_msg: >-
+      Versiunea Node.js instalata ({{ node_installed_final.stdout }})
+      nu corespunde versiunii cerute ({{ technologies.nodejs.version }}).
+    success_msg: >-
+      Versiunea Node.js instalata corespunde versiunii cerute:
+      {{ node_installed_final.stdout }}
+  when: technologies.nodejs.enabled | bool
+
+- name: Node.js | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ node_installed_final.stdout }}"
+  when: technologies.nodejs.enabled | bool

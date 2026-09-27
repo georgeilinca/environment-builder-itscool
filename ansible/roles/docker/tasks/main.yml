@@ -10,9 +10,34 @@
     cache_valid_time: 3600
   when: technologies.docker.enabled | bool
 
-- name: Docker | Instaleaza Docker
+- name: Docker | Obtine versiunea candidata din APT
+  ansible.builtin.command:
+    cmd: apt-cache policy docker-ce
+  register: docker_candidate
+  changed_when: false
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Afiseaza versiunea candidata
+  ansible.builtin.debug:
+    msg: "Versiunea Docker disponibila in APT: {{ docker_candidate.stdout | regex_search('Candidate:\\s+(.+)', '\\1') | first }}"
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Verifica major version
+  ansible.builtin.assert:
+    that:
+      - "(docker_candidate.stdout | regex_search('Candidate:\\s+5:' ~ technologies.docker.version ~ '\\.')) is not none"
+    fail_msg: "Versiunea Docker {{ technologies.docker.version }} nu este disponibila in repository-urile APT configurate."
+    success_msg: "Versiunea Docker disponibila corespunde versiunii cerute: {{ technologies.docker.version }}"
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Obtine versiunea completa candidata
+  ansible.builtin.set_fact:
+    docker_candidate_version: "{{ docker_candidate.stdout | regex_search('Candidate:\\s+(.+)', '\\1') | first | trim }}"
+  when: technologies.docker.enabled | bool
+
+- name: Docker | Instaleaza versiunea Docker ceruta
   ansible.builtin.apt:
-    name: docker-ce
+    name: "docker-ce={{ docker_candidate_version }}"
     state: present
   when: technologies.docker.enabled | bool
 

@@ -1,0 +1,49 @@
+---
+- name: Python | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Python. Versiunea necesara: {{ technologies.python.version }}"
+  when: technologies.python.enabled | bool
+
+- name: Python | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.python.enabled | bool
+
+- name: Python | Verifica versiunea ceruta in APT
+  ansible.builtin.command:
+    cmd: "apt-cache policy python{{ technologies.python.version }}"
+  register: python_candidate
+  changed_when: false
+  when: technologies.python.enabled | bool
+
+- name: Python | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ python_candidate.stdout }}"
+  when: technologies.python.enabled | bool
+
+- name: Python | Verifica daca versiunea este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in python_candidate.stdout"
+      - "(python_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+    fail_msg: "Versiunea Python {{ technologies.python.version }} nu este disponibila in repository-urile APT configurate."
+  when: technologies.python.enabled | bool
+
+- name: Python | Instaleaza Python
+  ansible.builtin.apt:
+    name: "python{{ technologies.python.version }}"
+    state: present
+  when: technologies.python.enabled | bool
+
+- name: Python | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: "python{{ technologies.python.version }} --version"
+  register: python_installed
+  changed_when: false
+  when: technologies.python.enabled | bool
+
+- name: Python | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ python_installed.stdout }}"
+  when: technologies.python.enabled | bool
