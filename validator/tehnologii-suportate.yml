@@ -20,7 +20,7 @@ technologies:
 
   nodejs:
     versions:
-      - "22"
+      - "18"
     command: "node"
 
   mysql:
@@ -30,15 +30,15 @@ technologies:
 
   nginx:
     versions:
-      - "1.28"
+      - "1.24"
     command: "nginx"
 
   git:
     versions:
-      - "2.51"
+      - "2.43"
     command: "git"
 
   redis:
     versions:
-      - "8"
+      - "7"
     command: "redis-server"

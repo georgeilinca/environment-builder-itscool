@@ -1,12 +1,24 @@
 technologies:
-  - name: docker
-    version: "29"
+  # - name: docker
+  #   version: "29"
 
-  - name: python
-    version: "3.12"
+  # - name: python
+  #   version: "3.12"
 
-  - name: java
-    version: "17"
+  # - name: java
+  #   version: "17"
 
-  - name: mysql
-    version: "8.0"
+  # - name: mysql
+  #   version: "8.0"
+
+  - name: nginx
+    version: "1.24"
+
+  - name: git
+    version: "2.43"
+
+  - name: redis
+    version: "7"
+
+  - name: nodejs
+    version: "18"

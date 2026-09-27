@@ -2,7 +2,7 @@
 
 set -u
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GENERATED_FILE="$PROJECT_ROOT/generated/generated.yml"
 
 echo "=================================================================="

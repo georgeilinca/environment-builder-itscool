@@ -14,3 +14,45 @@
     - role: nginx
     - role: git
     - role: redis
+
+  tasks:
+
+    - name: Environment Builder | Instaleaza yq
+      ansible.builtin.apt:
+        name: yq
+        state: present
+        update_cache: true
+
+    - name: Environment Builder | Creeaza directorul
+      ansible.builtin.file:
+        path: /opt/environment-builder
+        state: directory
+        mode: "0755"
+
+    - name: Environment Builder | Creeaza directorul generated
+      ansible.builtin.file:
+        path: /opt/environment-builder/generated
+        state: directory
+        mode: "0755"
+
+    - name: Environment Builder | Copiaza generated.yml
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../generated/generated.yml"
+        dest: /opt/environment-builder/generated/generated.yml
+        mode: "0644"
+
+    - name: Environment Builder | Copiaza verify.sh
+      ansible.builtin.copy:
+        src: "{{ playbook_dir }}/../scripts/verify.sh"
+        dest: /opt/environment-builder/verify.sh
+        mode: "0755"
+
+    - name: Environment Builder | Ruleaza verificarea
+      ansible.builtin.command:
+        cmd: /opt/environment-builder/verify.sh
+      register: verification_result
+      changed_when: false
+
+    - name: Environment Builder | Afiseaza rezultatul verificarii
+      ansible.builtin.debug:
+        msg: "{{ verification_result.stdout_lines }}"
