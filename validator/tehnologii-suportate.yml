@@ -1,4 +1,5 @@
 technologies:
+
   docker:
     versions:
       - "27"
@@ -24,20 +25,20 @@ technologies:
 
   mysql:
     versions:
-      - "8.0"
+      - "8.4"
     command: "mysql"
 
   nginx:
     versions:
-      - "1.24"
+      - "1.28"
     command: "nginx"
 
   git:
     versions:
-      - "2.43"
+      - "2.51"
     command: "git"
 
   redis:
     versions:
-      - "7"
+      - "8"
     command: "redis-server"

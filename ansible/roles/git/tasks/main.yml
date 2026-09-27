@@ -1,0 +1,59 @@
+---
+- name: Git | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Git. Versiunea necesara: {{ technologies.git.version }}"
+  when: technologies.git.enabled | bool
+
+- name: Git | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.git.enabled | bool
+
+- name: Git | Verifica versiunea ceruta in APT
+  ansible.builtin.command:
+    cmd: apt-cache policy git
+  register: git_candidate
+  changed_when: false
+  when: technologies.git.enabled | bool
+
+- name: Git | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ git_candidate.stdout }}"
+  when: technologies.git.enabled | bool
+
+- name: Git | Verifica daca versiunea este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in git_candidate.stdout"
+      - "(git_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+      - "(git_candidate.stdout | regex_search('Candidate:\\s+.*' ~ technologies.git.version ~ '\\.')) is not none"
+    fail_msg: >-
+      Versiunea Git {{ technologies.git.version }} nu este disponibila
+      in repository-urile APT configurate.
+  when: technologies.git.enabled | bool
+
+- name: Git | Obtine versiunea completa candidata
+  ansible.builtin.shell:
+    cmd: "apt-cache policy git | awk '/Candidate:/ {print $2}'"
+  register: git_candidate_version
+  changed_when: false
+  when: technologies.git.enabled | bool
+
+- name: Git | Instaleaza versiunea Git ceruta
+  ansible.builtin.apt:
+    name: "git={{ git_candidate_version.stdout | trim }}"
+    state: present
+  when: technologies.git.enabled | bool
+
+- name: Git | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: git --version
+  register: git_installed
+  changed_when: false
+  when: technologies.git.enabled | bool
+
+- name: Git | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ git_installed.stdout }}"
+  when: technologies.git.enabled | bool

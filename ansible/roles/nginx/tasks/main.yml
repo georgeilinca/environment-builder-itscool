@@ -1,0 +1,67 @@
+---
+- name: Nginx | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Nginx. Versiunea necesara: {{ technologies.nginx.version }}"
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Verifica versiunea ceruta in APT
+  ansible.builtin.command:
+    cmd: apt-cache policy nginx
+  register: nginx_candidate
+  changed_when: false
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ nginx_candidate.stdout }}"
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Verifica daca versiunea este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in nginx_candidate.stdout"
+      - "(nginx_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+      - "(nginx_candidate.stdout | regex_search('Candidate:\\s+.*' ~ technologies.nginx.version ~ '\\.')) is not none"
+    fail_msg: >-
+      Versiunea Nginx {{ technologies.nginx.version }} nu este disponibila
+      in repository-urile APT configurate.
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Obtine versiunea completa candidata
+  ansible.builtin.shell:
+    cmd: "apt-cache policy nginx | awk '/Candidate:/ {print $2}'"
+  register: nginx_candidate_version
+  changed_when: false
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Instaleaza versiunea Nginx ceruta
+  ansible.builtin.apt:
+    name: "nginx={{ nginx_candidate_version.stdout | trim }}"
+    state: present
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Se asigura ca Nginx ruleaza
+  ansible.builtin.service:
+    name: nginx
+    state: started
+    enabled: true
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: nginx -v
+  register: nginx_installed
+  changed_when: false
+  failed_when: false
+  when: technologies.nginx.enabled | bool
+
+- name: Nginx | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ nginx_installed.stderr }}"
+  when: technologies.nginx.enabled | bool

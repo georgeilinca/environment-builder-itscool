@@ -1,0 +1,73 @@
+---
+- name: MySQL | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea MySQL. Versiunea necesara: {{ technologies.mysql.version }}"
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Verifica versiunea disponibila in APT
+  ansible.builtin.command:
+    cmd: apt-cache policy mysql-server
+  register: mysql_candidate
+  changed_when: false
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ mysql_candidate.stdout }}"
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Verifica daca versiunea ceruta este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in mysql_candidate.stdout"
+      - "(mysql_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+      - "(mysql_candidate.stdout | regex_search('Candidate:\\s+.*' ~ technologies.mysql.version ~ '\\.')) is not none"
+    fail_msg: >-
+      Versiunea MySQL {{ technologies.mysql.version }} nu este disponibila
+      in repository-urile APT configurate.
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Obtine versiunea completa candidata
+  ansible.builtin.set_fact:
+    mysql_candidate_version: "{{ mysql_candidate.stdout_lines
+      | select('match', '^  Candidate:')
+      | map('regex_replace', '^  Candidate:\\s+', '')
+      | first
+      | trim }}"
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Afiseaza versiunea completa candidata
+  ansible.builtin.debug:
+    msg: "Versiunea MySQL disponibila: {{ mysql_candidate_version }}"
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Instaleaza versiunea MySQL ceruta
+  ansible.builtin.apt:
+    name: "mysql-server={{ mysql_candidate_version }}"
+    state: present
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Se asigura ca MySQL ruleaza
+  ansible.builtin.service:
+    name: mysql
+    state: started
+    enabled: true
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: mysql --version
+  register: mysql_installed
+  changed_when: false
+  when: technologies.mysql.enabled | bool
+
+- name: MySQL | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ mysql_installed.stdout }}"
+  when: technologies.mysql.enabled | bool

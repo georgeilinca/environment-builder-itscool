@@ -1,0 +1,66 @@
+---
+- name: Redis | Verifica daca instalarea e ceruta
+  ansible.builtin.debug:
+    msg: "Se cere instalarea Redis. Versiunea necesara: {{ technologies.redis.version }}"
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Update apt cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Verifica versiunea ceruta in APT
+  ansible.builtin.command:
+    cmd: apt-cache policy redis-server
+  register: redis_candidate
+  changed_when: false
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Afiseaza informatia APT
+  ansible.builtin.debug:
+    msg: "{{ redis_candidate.stdout }}"
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Verifica daca versiunea este disponibila
+  ansible.builtin.assert:
+    that:
+      - "'Candidate:' in redis_candidate.stdout"
+      - "(redis_candidate.stdout | regex_search('Candidate:\\s+(?!\\(none\\))\\S+')) is not none"
+      - "(redis_candidate.stdout | regex_search('Candidate:\\s+.*' ~ technologies.redis.version ~ '\\.')) is not none"
+    fail_msg: >-
+      Versiunea Redis {{ technologies.redis.version }} nu este disponibila
+      in repository-urile APT configurate.
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Obtine versiunea completa candidata
+  ansible.builtin.shell:
+    cmd: "apt-cache policy redis-server | awk '/Candidate:/ {print $2}'"
+  register: redis_candidate_version
+  changed_when: false
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Instaleaza versiunea Redis ceruta
+  ansible.builtin.apt:
+    name: "redis-server={{ redis_candidate_version.stdout | trim }}"
+    state: present
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Se asigura ca Redis ruleaza
+  ansible.builtin.service:
+    name: redis-server
+    state: started
+    enabled: true
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Verifica versiunea instalata
+  ansible.builtin.command:
+    cmd: redis-server --version
+  register: redis_installed
+  changed_when: false
+  when: technologies.redis.enabled | bool
+
+- name: Redis | Afiseaza versiunea instalata
+  ansible.builtin.debug:
+    msg: "{{ redis_installed.stdout }}"
+  when: technologies.redis.enabled | bool

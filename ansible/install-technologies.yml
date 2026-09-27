@@ -10,3 +10,7 @@
     - role: python
     - role: java
     - role: node
+    - role: mysql
+    - role: nginx
+    - role: git
+    - role: redis
