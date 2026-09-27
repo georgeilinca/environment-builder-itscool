@@ -1,6 +1,7 @@
 ---
 - name: Instaleaza tehnologiile cerute
   hosts: environment_servers
+  become: true
 
   vars:
     technologies: {}
