@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: environment-builder
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: environment-builder
+  template:
+    metadata:
+      labels:
+        app: environment-builder
+    spec:
+      containers:
+        - name: environment-builder
+          image: nginx:1.24
+          ports:
+            - containerPort: 80
