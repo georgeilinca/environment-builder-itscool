@@ -33,8 +33,9 @@ pipeline {
             steps {
                 sh '''
                     ansible-playbook \
-                      -i ansible/inventory.ini \
-                      ansible/install-technologies.yml
+                        -i ansible/inventory.ini \
+                        ansible/install-technologies.yml \
+                        -e @generated/generated.yml
                 '''
             }
         }
