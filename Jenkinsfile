@@ -40,18 +40,6 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                sh '''
-                    kubectl apply -f k8s/
-                    kubectl rollout status deployment/environment-builder
-                    kubectl get pods
-                    kubectl get services
-                '''
-            }
-        }
-    }
-
     post {
         success {
             echo 'Environment Builder pipeline PASSED'
